@@ -327,7 +327,9 @@ export async function POST(request: NextRequest) {
           endTime: endTimeForBooking.toISOString(),
           attendeeEmail: customer_email,
         })
-        calendarEventId = eventResult.id
+        if (eventResult.id) {
+          calendarEventId = eventResult.id
+        }
       }
     } catch (googleError) {
       console.log('Could not create Google Calendar event:', googleError)
