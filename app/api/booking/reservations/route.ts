@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
-import { getCalendarEvents, createCalendarEvent, deleteCalendarEvent } from '@/lib/google-calendar'
+import { getCalendarEvents, createCalendarEvent } from '@/lib/google-calendar'
 import { sendBookingConfirmation, sendBookingNotification, ADMIN_EMAIL } from '@/lib/email'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
