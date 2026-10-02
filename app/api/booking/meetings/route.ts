@@ -1,26 +1,50 @@
-import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 // GET all active meeting types for public booking
 export async function GET(request: NextRequest) {
   try {
-    const { data, error } = await supabase
-      .from('meeting_types')
-      .select('id, name, description, duration_minutes, buffer_minutes, max_bookings_per_day, is_active')
-      .eq('is_active', true)
-      .order('created_at', { ascending: false })
+    console.log('🔍 Fetching meeting types via REST API...')
+    console.log('URL:', supabaseUrl)
+    console.log('Service Key exists:', !!supabaseServiceKey)
 
-    if (error) throw error
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing Supabase configuration')
+    }
 
+    const query = encodeURIComponent("is_active=eq.true&order=created_at.desc")
+    const restUrl = `${supabaseUrl}/rest/v1/meeting_types?${query}&select=id,name,description,duration_minutes,buffer_minutes,max_bookings_per_day,is_active`
+
+    console.log('📍 REST URL (redacted):', restUrl.replace(supabaseUrl, '[URL]'))
+
+    const response = await fetch(restUrl, {
+      method: 'GET',
+      headers: {
+        'apikey': supabaseServiceKey,
+        'Authorization': `Bearer ${supabaseServiceKey}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    console.log('📊 Response status:', response.status)
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('❌ REST API Error:', response.status, errorText)
+      throw new Error(`Supabase API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('✅ Successfully fetched meeting types:', data?.length || 0)
     return NextResponse.json({ data: data || [] })
   } catch (error: any) {
+    console.error('❌ API Error:', error.message)
+    console.error('Error type:', error.constructor.name)
+    console.error('Full error:', error)
     return NextResponse.json(
-      { error: error.message },
+      { error: error.message || 'Failed to fetch meeting types' },
       { status: 500 }
     )
   }
