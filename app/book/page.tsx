@@ -3,10 +3,6 @@
 import { useState, useEffect } from 'react'
 import { format, addDays } from 'date-fns'
 import { pl } from 'date-fns/locale'
-import { Manrope, Jost } from 'next/font/google'
-
-const manrope = Manrope({ subsets: ['latin'] })
-const jost = Jost({ subsets: ['latin'] })
 
 interface TimeSlot {
   time: string
@@ -184,11 +180,11 @@ export default function BookingPage() {
   }
 
   return (
-    <div className={`${manrope.className} min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 py-12 px-4 sm:px-6 lg:px-8`}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className={`${jost.className} text-4xl sm:text-5xl font-bold text-white mb-3`}>
+          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-3">
             Umów się na spotkanie
           </h1>
           <p className="text-gray-400 text-lg">

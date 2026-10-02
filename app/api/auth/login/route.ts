@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
 
     const result = await signInAdmin(email, password)
 
-    if (!result.success) {
+    if (!result.success || !result.token) {
       return NextResponse.json(
         { error: result.error || 'Logowanie nie powiodło się' },
         { status: 401 }
