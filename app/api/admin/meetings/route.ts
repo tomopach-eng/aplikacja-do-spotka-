@@ -3,6 +3,13 @@ import { NextRequest, NextResponse } from 'next/server'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
+// Ensure URL has https:// protocol
+function formatSupabaseUrl(url: string | undefined): string {
+  if (!url) throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL')
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  return `https://${url}`
+}
+
 console.log('🔍 API Init - URL exists:', !!supabaseUrl, 'Service Key exists:', !!supabaseServiceKey)
 
 // GET all meeting types
@@ -14,7 +21,8 @@ export async function GET(request: NextRequest) {
       throw new Error('Missing Supabase configuration')
     }
 
-    const restUrl = `${supabaseUrl}/rest/v1/meeting_types?select=*&order=created_at.desc`
+    const baseUrl = formatSupabaseUrl(supabaseUrl)
+    const restUrl = `${baseUrl}/rest/v1/meeting_types?select=*&order=created_at.desc`
 
     const response = await fetch(restUrl, {
       method: 'GET',
@@ -72,7 +80,8 @@ export async function POST(request: NextRequest) {
       throw new Error('Missing Supabase configuration')
     }
 
-    const restUrl = `${supabaseUrl}/rest/v1/meeting_types?select=*`
+    const baseUrl = formatSupabaseUrl(supabaseUrl)
+    const restUrl = `${baseUrl}/rest/v1/meeting_types?select=*`
     const insertData = {
       name,
       description: description || null,

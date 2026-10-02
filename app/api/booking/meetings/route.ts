@@ -3,19 +3,29 @@ import { NextRequest, NextResponse } from 'next/server'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
+// Ensure URL has https:// protocol
+function formatSupabaseUrl(url: string | undefined): string {
+  if (!url) throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL')
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  return `https://${url}`
+}
+
 // GET all active meeting types for public booking
 export async function GET(request: NextRequest) {
   try {
     console.log('🔍 Fetching meeting types via REST API...')
-    console.log('URL:', supabaseUrl)
+    console.log('Raw URL:', supabaseUrl)
     console.log('Service Key exists:', !!supabaseServiceKey)
 
     if (!supabaseUrl || !supabaseServiceKey) {
       throw new Error('Missing Supabase configuration')
     }
 
+    const baseUrl = formatSupabaseUrl(supabaseUrl)
+    console.log('Formatted URL:', baseUrl)
+
     const query = encodeURIComponent("is_active=eq.true&order=created_at.desc")
-    const restUrl = `${supabaseUrl}/rest/v1/meeting_types?${query}&select=id,name,description,duration_minutes,buffer_minutes,max_bookings_per_day,is_active`
+    const restUrl = `${baseUrl}/rest/v1/meeting_types?${query}&select=id,name,description,duration_minutes,buffer_minutes,max_bookings_per_day,is_active`
 
     console.log('📍 REST URL (redacted):', restUrl.replace(supabaseUrl, '[URL]'))
 
