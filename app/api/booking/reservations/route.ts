@@ -3,10 +3,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getCalendarEvents, createCalendarEvent } from '@/lib/google-calendar'
 import { sendBookingConfirmation, sendBookingNotification, ADMIN_EMAIL } from '@/lib/email'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
+// Note: supabase client initialization is deferred to individual route handlers
+// to avoid errors during build time when env vars might not be available
 
 interface TimeSlot {
   time: string
@@ -95,6 +93,15 @@ function generateTimeSlots(
 // GET available time slots for a meeting type on a specific date
 export async function GET(request: NextRequest) {
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing Supabase configuration')
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
     const searchParams = request.nextUrl.searchParams
     const meetingTypeId = searchParams.get('meetingTypeId')
     const date = searchParams.get('date')
@@ -222,6 +229,15 @@ export async function GET(request: NextRequest) {
 // POST create new booking
 export async function POST(request: NextRequest) {
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing Supabase configuration')
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
     const body = await request.json()
     const {
       meeting_type_id,
@@ -372,6 +388,15 @@ export async function POST(request: NextRequest) {
 // PUT update booking
 export async function PUT(request: NextRequest) {
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing Supabase configuration')
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
     const body = await request.json()
     const { id, scheduled_at } = body
 
@@ -453,6 +478,15 @@ export async function PUT(request: NextRequest) {
 // DELETE cancel booking
 export async function DELETE(request: NextRequest) {
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing Supabase configuration')
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
     const { searchParams } = request.nextUrl
     const id = searchParams.get('id')
 

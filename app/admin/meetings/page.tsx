@@ -23,6 +23,10 @@ export default function MeetingsPage() {
   const [showForm, setShowForm] = useState(false)
   const [showAvailabilityForm, setShowAvailabilityForm] = useState(false)
   const [selectedMeetingId, setSelectedMeetingId] = useState<string | null>(null)
+  const [editingMeeting, setEditingMeeting] = useState<MeetingType | null>(null)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+  const [error, setError] = useState<string>('')
+  const [successMessage, setSuccessMessage] = useState<string>('')
 
   useEffect(() => {
     fetchMeetings()
@@ -57,8 +61,55 @@ export default function MeetingsPage() {
 
       await fetchMeetings()
       setShowForm(false)
+      setSuccessMessage('Typ spotkania został utworzony')
+      setTimeout(() => setSuccessMessage(''), 3000)
     } catch (error: any) {
       throw error
+    }
+  }
+
+  const handleEdit = async (formData: MeetingFormData) => {
+    if (!editingMeeting) return
+    try {
+      setError('')
+      const response = await fetch(`/api/admin/meetings/${editingMeeting.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Nie udało się zaktualizować spotkania')
+      }
+
+      await fetchMeetings()
+      setEditingMeeting(null)
+      setSuccessMessage('Typ spotkania został zaktualizowany')
+      setTimeout(() => setSuccessMessage(''), 3000)
+    } catch (error: any) {
+      setError(error.message || 'Błąd przy aktualizowaniu spotkania')
+    }
+  }
+
+  const handleDelete = async (meetingId: string) => {
+    try {
+      setError('')
+      const response = await fetch(`/api/admin/meetings/${meetingId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Nie udało się usunąć spotkania')
+      }
+
+      await fetchMeetings()
+      setDeleteConfirmId(null)
+      setSuccessMessage('Typ spotkania został usunięty')
+      setTimeout(() => setSuccessMessage(''), 3000)
+    } catch (error: any) {
+      setError(error.message || 'Błąd przy usuwaniu spotkania')
     }
   }
 
@@ -146,7 +197,10 @@ export default function MeetingsPage() {
                   </div>
 
                   <div className="flex gap-2 mt-4">
-                    <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition text-sm font-medium">
+                    <button
+                      onClick={() => setEditingMeeting(meeting)}
+                      className="px-4 py-2 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition text-sm font-medium"
+                    >
                       Edytuj
                     </button>
                     <button
@@ -158,7 +212,10 @@ export default function MeetingsPage() {
                     >
                       Dostępności
                     </button>
-                    <button className="px-4 py-2 bg-gray-100 text-red-600 rounded hover:bg-red-50 transition text-sm font-medium">
+                    <button
+                      onClick={() => setDeleteConfirmId(meeting.id)}
+                      className="px-4 py-2 bg-red-50 text-red-600 rounded hover:bg-red-100 transition text-sm font-medium"
+                    >
                       Usuń
                     </button>
                   </div>
@@ -186,6 +243,86 @@ export default function MeetingsPage() {
               }}
             />
           </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editingMeeting && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold">Edytuj typ spotkania</h2>
+              <button
+                onClick={() => setEditingMeeting(null)}
+                className="text-gray-500 hover:text-gray-700 text-2xl font-light"
+              >
+                ✕
+              </button>
+            </div>
+
+            {error && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-700">{error}</p>
+              </div>
+            )}
+
+            <MeetingForm
+              onSubmit={handleEdit}
+              isLoading={loading}
+              userId={ADMIN_USER_ID}
+              isEditing={true}
+              initialData={{
+                name: editingMeeting.name,
+                description: editingMeeting.description || '',
+                duration_minutes: editingMeeting.duration_minutes,
+                buffer_minutes: editingMeeting.buffer_minutes,
+                max_bookings_per_day: editingMeeting.max_bookings_per_day,
+                is_active: editingMeeting.is_active,
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
+            <h2 className="text-2xl font-bold mb-4 text-gray-900">Potwierdź usunięcie</h2>
+            <p className="text-gray-600 mb-6">
+              Czy na pewno chcesz usunąć typ spotkania "{meetings.find(m => m.id === deleteConfirmId)?.name}"?
+              Tej akcji nie będzie można cofnąć.
+            </p>
+
+            {error && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-700">{error}</p>
+              </div>
+            )}
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition font-medium"
+              >
+                Anuluj
+              </button>
+              <button
+                onClick={() => handleDelete(deleteConfirmId)}
+                disabled={loading}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-red-400 transition font-medium"
+              >
+                {loading ? 'Usuwanie...' : 'Usuń'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Message */}
+      {successMessage && (
+        <div className="fixed bottom-4 right-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg shadow-lg">
+          {successMessage}
         </div>
       )}
     </div>

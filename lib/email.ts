@@ -1,6 +1,18 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+let resendInstance: Resend | null = null
+
+function getResend(): Resend {
+  if (resendInstance) return resendInstance
+
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) {
+    throw new Error('Missing Resend API key')
+  }
+
+  resendInstance = new Resend(apiKey)
+  return resendInstance
+}
 
 export const ADMIN_EMAIL = 'tomopach@gmail.com'
 export const APP_NAME = 'AI Lab Booking App'
@@ -261,7 +273,7 @@ function cancellationNotificationEmail(booking: BookingDetails) {
 // Wysłanie emaila potwierdzenia do klienta
 export async function sendBookingConfirmation(booking: BookingDetails) {
   try {
-    const result = await resend.emails.send({
+    const result = await getResend().emails.send({
       from: `${APP_NAME} <onboarding@resend.dev>`,
       to: booking.customer_email,
       subject: `Potwierdzenie rezerwacji — ${booking.meeting_name}`,
@@ -279,7 +291,7 @@ export async function sendBookingConfirmation(booking: BookingDetails) {
 // Wysłanie emaila powiadomienia do Tomka
 export async function sendBookingNotification(booking: BookingDetails) {
   try {
-    const result = await resend.emails.send({
+    const result = await getResend().emails.send({
       from: `${APP_NAME} <onboarding@resend.dev>`,
       to: ADMIN_EMAIL,
       subject: `Nowa rezerwacja: ${booking.meeting_name} — ${booking.customer_name}`,
@@ -297,7 +309,7 @@ export async function sendBookingNotification(booking: BookingDetails) {
 // Wysłanie emaila anulowania do klienta
 export async function sendBookingCancellation(booking: BookingDetails) {
   try {
-    const result = await resend.emails.send({
+    const result = await getResend().emails.send({
       from: `${APP_NAME} <onboarding@resend.dev>`,
       to: booking.customer_email,
       subject: `Anulowanie rezerwacji — ${booking.meeting_name}`,
@@ -315,7 +327,7 @@ export async function sendBookingCancellation(booking: BookingDetails) {
 // Wysłanie powiadomienia o anulowaniu do Tomka
 export async function sendCancellationNotification(booking: BookingDetails) {
   try {
-    const result = await resend.emails.send({
+    const result = await getResend().emails.send({
       from: `${APP_NAME} <onboarding@resend.dev>`,
       to: ADMIN_EMAIL,
       subject: `Anulowanie rezerwacji: ${booking.meeting_name} — ${booking.customer_name}`,

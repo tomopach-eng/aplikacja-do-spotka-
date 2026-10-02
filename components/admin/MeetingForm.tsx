@@ -6,6 +6,8 @@ interface MeetingFormProps {
   onSubmit: (data: MeetingFormData) => Promise<void>
   isLoading?: boolean
   userId?: string
+  initialData?: Partial<MeetingFormData>
+  isEditing?: boolean
 }
 
 export interface MeetingFormData {
@@ -17,14 +19,14 @@ export interface MeetingFormData {
   is_active: boolean
 }
 
-export function MeetingForm({ onSubmit, isLoading = false }: MeetingFormProps) {
+export function MeetingForm({ onSubmit, isLoading = false, initialData, isEditing = false }: MeetingFormProps) {
   const [formData, setFormData] = useState<MeetingFormData>({
-    name: '',
-    description: '',
-    duration_minutes: 30,
-    buffer_minutes: 15,
-    max_bookings_per_day: null,
-    is_active: true,
+    name: initialData?.name || '',
+    description: initialData?.description || '',
+    duration_minutes: initialData?.duration_minutes || 30,
+    buffer_minutes: initialData?.buffer_minutes || 15,
+    max_bookings_per_day: initialData?.max_bookings_per_day || null,
+    is_active: initialData?.is_active !== undefined ? initialData.is_active : true,
   })
 
   const [error, setError] = useState<string | null>(null)
@@ -201,7 +203,7 @@ export function MeetingForm({ onSubmit, isLoading = false }: MeetingFormProps) {
         disabled={isLoading}
         className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
       >
-        {isLoading ? 'Dodawanie...' : 'Dodaj spotkanie'}
+        {isLoading ? (isEditing ? 'Aktualizowanie...' : 'Dodawanie...') : (isEditing ? 'Zaktualizuj spotkanie' : 'Dodaj spotkanie')}
       </button>
     </form>
   )

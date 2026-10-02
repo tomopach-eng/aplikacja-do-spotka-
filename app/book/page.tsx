@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { format, addDays } from 'date-fns'
 import { pl } from 'date-fns/locale'
+import DAILogo from '@/components/DAILogo'
 
 interface TimeSlot {
   time: string
@@ -182,6 +183,11 @@ export default function BookingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
+        {/* Logo */}
+        <div className="flex justify-center mb-8 text-purple-400">
+          <DAILogo />
+        </div>
+
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-3">
