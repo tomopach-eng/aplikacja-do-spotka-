@@ -16,13 +16,18 @@ console.log('🔍 API Init - URL exists:', !!supabaseUrl, 'Service Key exists:',
 export async function GET(request: NextRequest) {
   try {
     console.log('📍 GET /api/admin/meetings - starting')
+    console.log('Config check - URL:', !!supabaseUrl, 'Key:', !!supabaseServiceKey)
 
     if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('❌ Missing Supabase config')
       throw new Error('Missing Supabase configuration')
     }
 
     const baseUrl = formatSupabaseUrl(supabaseUrl)
     const restUrl = `${baseUrl}/rest/v1/meeting_types?select=*&order=created_at.desc`
+
+    console.log('API URL (redacted):', restUrl.replace(supabaseUrl, '[URL]'))
+    console.log('Service Key first 10 chars:', supabaseServiceKey.substring(0, 10))
 
     const response = await fetch(restUrl, {
       method: 'GET',
@@ -38,7 +43,7 @@ export async function GET(request: NextRequest) {
     if (!response.ok) {
       const errorText = await response.text()
       console.error('❌ REST API Error:', response.status, errorText)
-      throw new Error(`Supabase API error: ${response.status}`)
+      throw new Error(`Supabase API error: ${response.status} - ${errorText.substring(0, 200)}`)
     }
 
     const data = await response.json()
@@ -46,8 +51,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data })
   } catch (error: any) {
     console.error('❌ GET Error:', error.message)
+    console.error('Stack:', error.stack)
     return NextResponse.json(
-      { error: error.message },
+      { error: error.message, stack: error.stack },
       { status: 500 }
     )
   }
@@ -77,6 +83,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('❌ Missing config - URL:', !!supabaseUrl, 'Key:', !!supabaseServiceKey)
       throw new Error('Missing Supabase configuration')
     }
 
@@ -91,6 +98,9 @@ export async function POST(request: NextRequest) {
       is_active: is_active !== false,
       created_at: new Date().toISOString(),
     }
+
+    console.log('API URL (redacted):', restUrl.replace(supabaseUrl, '[URL]'))
+    console.log('Service Key first 10 chars:', supabaseServiceKey.substring(0, 10))
 
     const response = await fetch(restUrl, {
       method: 'POST',
@@ -108,7 +118,7 @@ export async function POST(request: NextRequest) {
     if (!response.ok) {
       const errorText = await response.text()
       console.error('❌ REST API Error:', response.status, errorText)
-      throw new Error(`Supabase API error: ${response.status}`)
+      throw new Error(`Supabase API error: ${response.status} - ${errorText.substring(0, 200)}`)
     }
 
     const data = await response.json()
@@ -116,8 +126,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ data: data[0] }, { status: 201 })
   } catch (error: any) {
     console.error('❌ POST Error:', error.message)
+    console.error('Stack:', error.stack)
     return NextResponse.json(
-      { error: error.message },
+      { error: error.message, stack: error.stack },
       { status: 500 }
     )
   }
