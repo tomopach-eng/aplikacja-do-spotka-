@@ -35,7 +35,11 @@ export async function getCalendarEvents(accessToken: string, timeMin: string, ti
     orderBy: 'startTime',
   })
 
-  return response.data.items || []
+  // Map Google Calendar events to our CalendarEvent interface
+  return (response.data.items || []).map(item => ({
+    start: item.start ? { dateTime: item.start.dateTime || undefined } : undefined,
+    end: item.end ? { dateTime: item.end.dateTime || undefined } : undefined,
+  }))
 }
 
 export async function createCalendarEvent(
