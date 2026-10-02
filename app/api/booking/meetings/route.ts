@@ -24,8 +24,7 @@ export async function GET(request: NextRequest) {
     const baseUrl = formatSupabaseUrl(supabaseUrl)
     console.log('Formatted URL:', baseUrl)
 
-    const query = encodeURIComponent("is_active=eq.true&order=created_at.desc")
-    const restUrl = `${baseUrl}/rest/v1/meeting_types?${query}&select=id,name,description,duration_minutes,buffer_minutes,max_bookings_per_day,is_active`
+    const restUrl = `${baseUrl}/rest/v1/meeting_types?is_active=eq.true&order=created_at.desc&select=id,name,description,duration_minutes,buffer_minutes,max_bookings_per_day,is_active`
 
     console.log('📍 REST URL (redacted):', restUrl.replace(supabaseUrl, '[URL]'))
 
