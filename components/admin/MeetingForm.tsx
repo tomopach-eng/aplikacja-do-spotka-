@@ -5,6 +5,7 @@ import { useState } from 'react'
 interface MeetingFormProps {
   onSubmit: (data: MeetingFormData) => Promise<void>
   isLoading?: boolean
+  userId?: string
 }
 
 export interface MeetingFormData {
